@@ -1,0 +1,72 @@
+option.  Following symlinks is incompatible with this option.
+
+     --ddeepptthh  Always true; same as the --dd option.
+
+     --ddeepptthh _n
+             True if the depth of the file relative to the starting point of
+             the traversal is _n.
+
+     --eemmppttyy  True if the current file or directory is empty.
+
+     --eexxeecc _u_t_i_l_i_t_y [_a_r_g_u_m_e_n_t _._._.] ;
+             True if the program named _u_t_i_l_i_t_y returns a zero value as its
+             exit status.  Optional _a_r_g_u_m_e_n_t_s may be passed to the utility.
+             The expression must be terminated by a semicolon (``;'').  If you
+             invoke ffiinndd from a shell you may need to quote the semicolon if
+             the shell would otherwise treat it as a control operator.  If the
+             string ``{}'' appears anywhere in the utility name or the argu-
+             ments it is replaced by the pathname of the current file.
+             _U_t_i_l_i_t_y will be executed from the directory from which ffiinndd was
+             executed.  _U_t_i_l_i_t_y and _a_r_g_u_m_e_n_t_s are not subject to the further
+             expansion of shell patterns and constructs.
+
+     --eexxeecc _u_t_i_l_i_t_y [_a_r_g_u_m_e_n_t _._._.] {} +
+             Same as --eexxeecc, except that ``{}'' is replaced with as many path-
+             names as possible for each invocation of _u_t_i_l_i_t_y.  This behaviour
+             is similar to that of xargs(1).
+
+     --eexxeeccddiirr _u_t_i_l_i_t_y [_a_r_g_u_m_e_n_t _._._.] ;
+             The --eexxeeccddiirr primary is identical to the --eexxeecc primary with the
+             exception that _u_t_i_l_i_t_y will be executed from the directory that
+             holds the current file.  The filename substituted for the string
+             ``{}'' is not qualified.
+
+     --eexxeeccddiirr _u_t_i_l_i_t_y [_a_r_g_u_m_e_n_t _._._.] {} +
+             Same as --eexxeeccddiirr, except that ``{}'' is replaced with as many
+             pathnames as possible for each invocation of _u_t_i_l_i_t_y.  This be-
+             haviour is similar to that of xargs(1).
+
+     --ffllaaggss [--|++]_f_l_a_g_s,_n_o_t_f_l_a_g_s
+             The flags are specified using symbolic names (see chflags(1)).
+             Those with the "no" prefix (except "nodump") are said to be
+             _n_o_t_f_l_a_g_s.  Flags in _f_l_a_g_s are checked to be set, and flags in
+             _n_o_t_f_l_a_g_s are checked to be not set.  Note that this is different
+             from --ppeerrmm, which only allows the user to specify mode bits that
+             are set.
+
+             If flags are preceded by a dash (``-''), this primary evaluates
+             to true if at least all of the bits in _f_l_a_g_s and none of the bits
+             in _n_o_t_f_l_a_g_s are set in the file's flags bits.  If flags are pre-
+             ceded by a plus (``+''), this primary evaluates to true if any of
+             the bits in _f_l_a_g_s is set in the file's flags bits, or any of the
+             bits in _n_o_t_f_l_a_g_s is not set in the file's flags bits.  Otherwise,
+             this primary evaluates to true if the bits in _f_l_a_g_s exactly match
+             the file's flags bits, and none of the _f_l_a_g_s bits match those of
+             _n_o_t_f_l_a_g_s.
+
+     --ffssttyyppee _t_y_p_e
+             True if the file is contained in a file system of type _t_y_p_e.  The
+             lsvfs(1) command can be used to find out the types of file sys-
+             tems that are available on the system.  In addition, there are
+             two pseudo-types, ``local'' and ``rdonly''.  The former matches
+             any file system physically mounted on the system where the ffiinndd
+             is being executed and the latter matches any file system which is
+             mounted read-only.
+
+     --ggiidd _g_n_a_m_e
+             The same thing as _-_g_r_o_u_p _g_n_a_m_e for compatibility with GNU find.
+             GNU find imposes a restriction that _g_n_a_m_e is numeric, while
+             find(1) does not.
+
+     --ggrroouupp _g_n_a_m_e
+             True if the file belong

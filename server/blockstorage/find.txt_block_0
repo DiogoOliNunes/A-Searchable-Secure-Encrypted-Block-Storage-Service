@@ -1,0 +1,79 @@
+
+FIND(1)                   BSD General Commands Manual                  FIND(1)
+
+NNAAMMEE
+     ffiinndd -- walk a file hierarchy
+
+SSYYNNOOPPSSIISS
+     ffiinndd [--HH | --LL | --PP] [--EEXXddssxx] [--ff _p_a_t_h] _p_a_t_h _._._. [_e_x_p_r_e_s_s_i_o_n]
+     ffiinndd [--HH | --LL | --PP] [--EEXXddssxx] --ff _p_a_t_h [_p_a_t_h _._._.] [_e_x_p_r_e_s_s_i_o_n]
+
+DDEESSCCRRIIPPTTIIOONN
+     The ffiinndd utility recursively descends the directory tree for each _p_a_t_h
+     listed, evaluating an _e_x_p_r_e_s_s_i_o_n (composed of the ``primaries'' and
+     ``operands'' listed below) in terms of each file in the tree.
+
+     The options are as follows:
+
+     --EE      Interpret regular expressions followed by --rreeggeexx and --iirreeggeexx pri-
+             maries as extended (modern) regular expressions rather than basic
+             regular expressions (BRE's).  The re_format(7) manual page fully
+             describes both formats.
+
+     --HH      Cause the file information and file type (see stat(2)) returned
+             for each symbolic link specified on the command line to be those
+             of the file referenced by the link, not the link itself.  If the
+             referenced file does not exist, the file information and type
+             will be for the link itself.  File information of all symbolic
+             links not on the command line is that of the link itself.
+
+     --LL      Cause the file information and file type (see stat(2)) returned
+             for each symbolic link to be those of the file referenced by the
+             link, not the link itself.  If the referenced file does not
+             exist, the file information and type will be for the link itself.
+
+             This option is equivalent to the deprecated --ffoollllooww primary.
+
+     --PP      Cause the file information and file type (see stat(2)) returned
+             for each symbolic link to be those of the link itself.  This is
+             the default.
+
+     --XX      Permit ffiinndd to be safely used in conjunction with xargs(1).  If a
+             file name contains any of the delimiting characters used by
+             xargs(1), a diagnostic message is displayed on standard error,
+             and the file is skipped.  The delimiting characters include sin-
+             gle (`` ' '') and double (`` " '') quotes, backslash (``\''),
+             space, tab and newline characters.
+
+             However, you may wish to consider the --pprriinntt00 primary in conjunc-
+             tion with ``xxaarrggss --00'' as an effective alternative.
+
+     --dd      Cause ffiinndd to perform a depth-first traversal, i.e., directories
+             are visited in post-order and all entries in a directory will be
+             acted on before the directory itself.  By default, ffiinndd visits
+             directories in pre-order, i.e., before their contents.  Note, the
+             default is _n_o_t a breadth-first traversal.
+
+             This option is equivalent to the --ddeepptthh primary of IEEE Std
+             1003.1-2001 (``POSIX.1'').  The --dd option can be useful when ffiinndd
+             is used with cpio(1) to process files that are contained in
+             directories with unusual permissions.  It ensures that you have
+             write permission while you are placing files in a directory, then
+             sets the directory's permissions as the last thing.
+
+     --ff      Specify a file hierarchy for ffiinndd to traverse.  File hierarchies
+             may also be specified as the operands immediately following the
+             options.
+
+     --ss      Cause ffiinndd to traverse the file hierarchies in lexicographical
+             order, i.e., alphabetical order within each directory.  Note:
+             `find -s' and `find | sort' may give different results.
+
+     --xx      Prevent ffiinndd from descending into directories that have a device
+             number different than that of the file from which the descent
+             began.
+
+             This option is equivalent to the deprecated --xxddeevv primary.
+
+PPRRIIMMAARRIIEESS
+  

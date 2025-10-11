@@ -8,7 +8,7 @@ import java.util.*;
 
 public class BlockStorageServer {
     private static final int PORT = 5000;
-    private static final String BLOCK_DIR = "blockstorage";
+    private static final String BLOCK_DIR = "server/blockstorage";
     private static final String META_FILE = "metadata.ser";
 
     // Map filename -> list of keywords
@@ -16,7 +16,8 @@ public class BlockStorageServer {
 
     public static void main(String[] args) throws IOException {
         File dir = new File(BLOCK_DIR);
-        if (!dir.exists()) dir.mkdir();
+        if (!dir.exists())
+            dir.mkdir();
         loadMetadata();
 
         ServerSocket serverSocket = new ServerSocket(PORT);
@@ -30,9 +31,8 @@ public class BlockStorageServer {
 
     private static void handleClient(Socket socket) {
         try (
-            DataInputStream in = new DataInputStream(socket.getInputStream());
-            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-        ) {
+                DataInputStream in = new DataInputStream(socket.getInputStream());
+                DataOutputStream out = new DataOutputStream(socket.getOutputStream());) {
             String command;
             while ((command = in.readUTF()) != null) {
                 switch (command) {
@@ -106,9 +106,11 @@ public class BlockStorageServer {
 
     private static void listBlocks(DataOutputStream out) throws IOException {
         String[] files = new File(BLOCK_DIR).list();
-        if (files == null) files = new String[0];
+        if (files == null)
+            files = new String[0];
         out.writeInt(files.length);
-        for (String f : files) out.writeUTF(f);
+        for (String f : files)
+            out.writeUTF(f);
         out.flush();
     }
 
@@ -121,7 +123,8 @@ public class BlockStorageServer {
             }
         }
         out.writeInt(results.size());
-        for (String f : results) out.writeUTF(f);
+        for (String f : results)
+            out.writeUTF(f);
         out.flush();
     }
 
@@ -135,7 +138,8 @@ public class BlockStorageServer {
 
     private static void loadMetadata() {
         File f = new File(META_FILE);
-        if (!f.exists()) return;
+        if (!f.exists())
+            return;
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f))) {
             metadata = (Map<String, List<String>>) ois.readObject();
         } catch (IOException | ClassNotFoundException e) {

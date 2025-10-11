@@ -15,10 +15,9 @@ public class BlockStorageClient {
 
         Socket socket = new Socket("localhost", PORT);
         try (
-            DataInputStream in = new DataInputStream(socket.getInputStream());
-            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-            Scanner scanner = new Scanner(System.in);
-        ) {
+                DataInputStream in = new DataInputStream(socket.getInputStream());
+                DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+                Scanner scanner = new Scanner(System.in);) {
             while (true) {
                 System.out.print("Command (PUT/GET/LIST/SEARCH/EXIT): ");
                 String cmd = scanner.nextLine().toUpperCase();
@@ -36,7 +35,8 @@ public class BlockStorageClient {
                         String kwLine = scanner.nextLine();
                         List<String> keywords = new ArrayList<>();
                         if (!kwLine.trim().isEmpty()) {
-                            for (String kw : kwLine.split(",")) keywords.add(kw.trim().toLowerCase());
+                            for (String kw : kwLine.split(","))
+                                keywords.add(kw.trim().toLowerCase());
                         }
                         putFile(file, keywords, out, in);
                         saveIndex();
@@ -50,7 +50,8 @@ public class BlockStorageClient {
 
                     case "LIST":
                         System.out.println("Stored files:");
-                        for (String f : fileIndex.keySet()) System.out.println(" - " + f);
+                        for (String f : fileIndex.keySet())
+                            System.out.println(" - " + f);
                         break;
 
                     case "SEARCH":
@@ -75,7 +76,8 @@ public class BlockStorageClient {
         }
     }
 
-    private static void putFile(File file, List<String> keywords, DataOutputStream out, DataInputStream in) throws IOException {
+    private static void putFile(File file, List<String> keywords, DataOutputStream out, DataInputStream in)
+            throws IOException {
         List<String> blocks = new ArrayList<>();
         try (FileInputStream fis = new FileInputStream(file)) {
             byte[] buffer = new byte[BLOCK_SIZE];
@@ -89,13 +91,14 @@ public class BlockStorageClient {
                 out.writeUTF(blockId);
                 out.writeInt(blockData.length);
                 out.write(blockData);
-		System.out.print("."); // Just for debug
+                System.out.print("."); // Just for debug
 
                 // Send keywords for first block only
                 if (blockNum == 1) {
                     out.writeInt(keywords.size());
-                    for (String kw : keywords) out.writeUTF(kw);
-		System.out.println("/nSent keywords./n"); // Just for debug    
+                    for (String kw : keywords)
+                        out.writeUTF(kw);
+                    System.out.println("/nSent keywords./n"); // Just for debug
                 } else {
                     out.writeInt(0); // no keywords for other blocks
                 }
@@ -110,14 +113,14 @@ public class BlockStorageClient {
             }
         }
         fileIndex.put(file.getName(), blocks);
-	System.out.println();
-	System.out.println("File stored with " + blocks.size() + " blocks.");
+        System.out.println();
+        System.out.println("File stored with " + blocks.size() + " blocks.");
     }
 
     private static void getFile(String filename, DataOutputStream out, DataInputStream in) throws IOException {
         List<String> blocks = fileIndex.get(filename);
         if (blocks == null) {
-	    System.out.println();	    
+            System.out.println();
             System.out.println("File not found in local index.");
             return;
         }
@@ -133,11 +136,11 @@ public class BlockStorageClient {
                 }
                 byte[] data = new byte[length];
                 in.readFully(data);
-		System.out.print("."); // Just for debug 
+                System.out.print("."); // Just for debug
                 fos.write(data);
             }
         }
-	System.out.println();	
+        System.out.println();
         System.out.println("File reconstructed: retrieved_" + filename);
     }
 
@@ -146,7 +149,7 @@ public class BlockStorageClient {
         out.writeUTF(keyword.toLowerCase());
         out.flush();
         int count = in.readInt();
-        System.out.println();	
+        System.out.println();
         System.out.println("Search results:");
         for (int i = 0; i < count; i++) {
             System.out.println(" - " + in.readUTF());
@@ -163,7 +166,8 @@ public class BlockStorageClient {
 
     private static void loadIndex() {
         File f = new File(INDEX_FILE);
-        if (!f.exists()) return;
+        if (!f.exists())
+            return;
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f))) {
             fileIndex = (Map<String, List<String>>) ois.readObject();
         } catch (IOException | ClassNotFoundException e) {

@@ -1,0 +1,73 @@
+ current file has a more recent last modification time
+             than _f_i_l_e.
+
+     --nneewweerr_X_Y _f_i_l_e
+             True if the current file has a more recent last access time
+             (_X=aa), inode creation time (_X=BB), change time (_X=cc), or modifica-
+             tion time (_X=mm) than the last access time (_Y=aa), inode creation
+             time (_Y=BB), change time (_Y=cc), or modification time (_Y=mm) of
+             _f_i_l_e.  In addition, if _Y=tt, then _f_i_l_e is instead interpreted as a
+             direct date specification of the form understood by cvs(1).  Note
+             that --nneewweerrmmmm is equivalent to --nneewweerr.
+
+     --nnooggrroouupp
+             True if the file belongs to an unknown group.
+
+     --nnooiiggnnoorree__rreeaaddddiirr__rraaccee
+             This option is for GNU find compatibility and is ignored.
+
+     --nnoolleeaaff
+             This option is for GNU find compatibility.  In GNU find it dis-
+             ables an optimization not relevant to find(1), so it is ignored.
+
+     --nnoouusseerr
+             True if the file belongs to an unknown user.
+
+     --ookk _u_t_i_l_i_t_y [_a_r_g_u_m_e_n_t _._._.] ;
+             The --ookk primary is identical to the --eexxeecc primary with the excep-
+             tion that ffiinndd requests user affirmation for the execution of the
+             _u_t_i_l_i_t_y by printing a message to the terminal and reading a
+             response.  If the response is not affirmative (`y' in the
+             ``POSIX'' locale), the command is not executed and the value of
+             the --ookk expression is false.
+
+     --ookkddiirr _u_t_i_l_i_t_y [_a_r_g_u_m_e_n_t _._._.] ;
+             The --ookkddiirr primary is identical to the --eexxeeccddiirr primary with the
+             same exception as described for the --ookk primary.
+
+     --ppaatthh _p_a_t_t_e_r_n
+             True if the pathname being examined matches _p_a_t_t_e_r_n.  Special
+             shell pattern matching characters (``['', ``]'', ``*'', and
+             ``?'') may be used as part of _p_a_t_t_e_r_n.  These characters may be
+             matched explicitly by escaping them with a backslash (``\'').
+             Slashes (``/'') are treated as normal characters and do not have
+             to be matched explicitly.
+
+     --ppeerrmm [--|++]_m_o_d_e
+             The _m_o_d_e may be either symbolic (see chmod(1)) or an octal num-
+             ber.  If the _m_o_d_e is symbolic, a starting value of zero is
+             assumed and the _m_o_d_e sets or clears permissions without regard to
+             the process' file mode creation mask.  If the _m_o_d_e is octal, only
+             bits 07777 (S_ISUID | S_ISGID | S_ISTXT | S_IRWXU | S_IRWXG |
+             S_IRWXO) of the file's mode bits participate in the comparison.
+             If the _m_o_d_e is preceded by a dash (``-''), this primary evaluates
+             to true if at least all of the bits in the _m_o_d_e are set in the
+             file's mode bits.  If the _m_o_d_e is preceded by a plus (``+''),
+             this primary evaluates to true if any of the bits in the _m_o_d_e are
+             set in the file's mode bits.  Otherwise, this primary evaluates
+             to true if the bits in the _m_o_d_e exactly match the file's mode
+             bits.  Note, the first character of a symbolic mode may not be a
+             dash (``-'').
+
+     --pprriinntt  This primary always evaluates to true.  It prints the pathname of
+             the current file to standard output.  If none of --eexxeecc, --llss,
+             --pprriinntt, --pprriinntt00, or --ookk is specified, the given expression shall
+             be effectively replaced by (( _g_i_v_e_n _e_x_p_r_e_s_s_i_o_n )) --pprriinntt.
+
+     --pprriinntt00
+             This primary always evaluates to true.  It prints the pathname of
+             the current file to standard output, followed by an ASCII NUL
+             character (character code 0).
+
+     --pprruunnee  This primary always evaluates to true.  It causes ffiinndd to not
+             descend into the curren

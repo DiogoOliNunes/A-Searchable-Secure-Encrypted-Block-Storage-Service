@@ -1,0 +1,87 @@
+   All primaries which take a numeric argument allow the number to be pre-
+     ceded by a plus sign (``+'') or a minus sign (``-'').  A preceding plus
+     sign means ``more than n'', a preceding minus sign means ``less than n''
+     and neither means ``exactly n''.
+
+     --BBmmiinn _n
+             True if the difference between the time of a file's inode cre-
+             ation and the time ffiinndd was started, rounded up to the next full
+             minute, is _n minutes.
+
+     --BBnneewweerr _f_i_l_e
+             Same as --nneewweerrBBmm.
+
+     --BBttiimmee _n[ssmmhhddww]
+             If no units are specified, this primary evaluates to true if the
+             difference between the time of a file's inode creation and the
+             time ffiinndd was started, rounded up to the next full 24-hour
+             period, is _n 24-hour periods.
+
+             If units are specified, this primary evaluates to true if the
+             difference between the time of a file's inode creation and the
+             time ffiinndd was started is exactly _n units.  Please refer to the
+             --aattiimmee primary description for information on supported time
+             units.
+
+     --aaccll    May be used in conjunction with other primaries to locate files
+             with extended ACLs.  See acl(3) for more information.
+
+     --aammiinn _n
+             True if the difference between the file last access time and the
+             time ffiinndd was started, rounded up to the next full minute, is _n
+             minutes.
+
+     --aanneewweerr _f_i_l_e
+             Same as --nneewweerraamm.
+
+     --aattiimmee _n[ssmmhhddww]
+             If no units are specified, this primary evaluates to true if the
+             difference between the file last access time and the time ffiinndd
+             was started, rounded up to the next full 24-hour period, is _n
+             24-hour periods.
+
+             If units are specified, this primary evaluates to true if the
+             difference between the file last access time and the time ffiinndd
+             was started is exactly _n units.  Possible time units are as fol-
+             lows:
+
+             ss       second
+             mm       minute (60 seconds)
+             hh       hour (60 minutes)
+             dd       day (24 hours)
+             ww       week (7 days)
+
+             Any number of units may be combined in one --aattiimmee argument, for
+             example, ``-atime -1h30m''.  Units are probably only useful when
+             used in conjunction with the ++ or -- modifier.
+
+     --ccmmiinn _n
+             True if the difference between the time of last change of file
+             status information and the time ffiinndd was started, rounded up to
+             the next full minute, is _n minutes.
+
+     --ccnneewweerr _f_i_l_e
+             Same as --nneewweerrccmm.
+
+     --ccttiimmee _n[ssmmhhddww]
+             If no units are specified, this primary evaluates to true if the
+             difference between the time of last change of file status infor-
+             mation and the time ffiinndd was started, rounded up to the next full
+             24-hour period, is _n 24-hour periods.
+
+             If units are specified, this primary evaluates to true if the
+             difference between the time of last change of file status infor-
+             mation and the time ffiinndd was started is exactly _n units.  Please
+             refer to the --aattiimmee primary description for information on sup-
+             ported time units.
+
+     --dd      Same as ddeepptthh.  GNU find implements this as a primary in mistaken
+             emulation of FreeBSD find(1).
+
+     --ddeelleettee
+             Delete found files and/or directories.  Always returns true.
+             This executes from the current working directory as ffiinndd recurses
+             down the tree.  It will not attempt to delete a filename with a
+             ``_/'' character in its pathname relative to ``_.'' for security
+             reasons.  Depth-first traversal processing is implied by this
+             
