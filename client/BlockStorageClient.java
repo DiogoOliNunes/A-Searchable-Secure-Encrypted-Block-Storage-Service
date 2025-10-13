@@ -2,6 +2,7 @@
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import encryption.FileEncryption;
 
 public class BlockStorageClient {
     private static final int PORT = 5000;
@@ -9,6 +10,8 @@ public class BlockStorageClient {
     private static final String INDEX_FILE = "client_index.ser";
 
     private static Map<String, List<String>> fileIndex = new HashMap<>();
+
+    private static FileEncryption encryptor;
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         loadIndex();
@@ -33,6 +36,9 @@ public class BlockStorageClient {
                         }
                         System.out.print("Enter keywords (comma-separated): ");
                         String kwLine = scanner.nextLine();
+                        System.out.println("Which ciphersuite? (AES_256/GCM/NoPadding, AES_256/CBC/PKCS5Padding, ChaCha20-Poly1305): ");
+                        String ciphersuite = scanner.nextLine();
+                        encryptor = new FileEncryption(ciphersuite);
                         List<String> keywords = new ArrayList<>();
                         if (!kwLine.trim().isEmpty()) {
                             for (String kw : kwLine.split(","))
@@ -85,6 +91,7 @@ public class BlockStorageClient {
             int blockNum = 0;
             while ((bytesRead = fis.read(buffer)) != -1) {
                 byte[] blockData = Arrays.copyOf(buffer, bytesRead);
+                blockData = encryptor.encrypt(blockData.toString().getBytes());
                 String blockId = file.getName() + "_block_" + blockNum++;
 
                 out.writeUTF("STORE_BLOCK");
@@ -111,6 +118,9 @@ public class BlockStorageClient {
                 }
                 blocks.add(blockId);
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
         }
         fileIndex.put(file.getName(), blocks);
         System.out.println();
@@ -136,9 +146,13 @@ public class BlockStorageClient {
                 }
                 byte[] data = new byte[length];
                 in.readFully(data);
+                data = encryptor.decrypt(data);
                 System.out.print("."); // Just for debug
                 fos.write(data);
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
         }
         System.out.println();
         System.out.println("File reconstructed: retrieved_" + filename);
