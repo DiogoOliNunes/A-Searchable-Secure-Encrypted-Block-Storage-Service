@@ -36,6 +36,24 @@ public class FileEncryption {
         return null;
     }
 
+    public byte[] decrypt(byte[] data) throws Exception {
+        switch (ciphersuite) {
+            case "AES_256/GCM/NoPadding":
+                return encrypt_AES_GCM(data);
+            case "AES_256/CBC/PKCS5Padding":
+                // Implement AES_256/CBC/PKCS5Padding decryption
+                break;
+            case "ChaCha20-Poly1305":
+                // Implement ChaCha20-Poly1305 decryption
+                ChaCha20 chacha20 = new ChaCha20();
+                return chacha20.decrypt(data);
+            default:
+                System.out.println("Unsupported ciphersuite.");
+            break;
+        }
+        return null;
+    }
+
     public byte[] encrypt_AES_GCM(byte[] data) throws NoSuchAlgorithmException, NoSuchPaddingException {
         
         byte[] keyBytes = new byte[] {
