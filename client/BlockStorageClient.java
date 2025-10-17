@@ -13,6 +13,7 @@ public class BlockStorageClient {
     private static Map<String, List<String>> fileIndex = new HashMap<>();
 
     private static FileEncryption encryptor;
+    private static FileDecryption decryptor;
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         loadIndex();
@@ -40,6 +41,7 @@ public class BlockStorageClient {
                         System.out.println("Which ciphersuite? (AES_256/GCM/NoPadding, AES_256/CBC/PKCS5Padding, ChaCha20-Poly1305): ");
                         String ciphersuite = scanner.nextLine();
                         encryptor = new FileEncryption(ciphersuite);
+                        decryptor = new FileDecryption(ciphersuite);
                         List<String> keywords = new ArrayList<>();
                         if (!kwLine.trim().isEmpty()) {
                             for (String kw : kwLine.split(","))
@@ -149,12 +151,9 @@ public class BlockStorageClient {
                 in.readFully(data);
                 byte[] decryptedBlock = null;
                 try {
-                    FileDecryption fileDecryption = new FileDecryption();
-                    decryptedBlock = fileDecryption.decrypt("AES_256/GCM/NoPadding", data);
-                    
+                    decryptedBlock = decryptor.decrypt(data);
                 } catch (Exception e) {
                 }
-                //data = encryptor.decrypt(data);
                 System.out.print("."); // Just for debug
                 fos.write(decryptedBlock);
             }

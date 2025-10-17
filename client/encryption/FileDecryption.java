@@ -7,25 +7,27 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import streamciphers.ChaCha20;
+
 public class FileDecryption {
     
-     public String ciphersuite;
+    public String ciphersuite;
 
-    public void main(String ciphersuite) {
+    public FileDecryption(String ciphersuite) {
         this.ciphersuite = ciphersuite;
     }
 
-    public byte[] decrypt(String ciphersuite, byte[] data) throws NoSuchAlgorithmException, NoSuchPaddingException {
+    public byte[] decrypt(byte[] data) throws Exception {
         switch (ciphersuite) {
             case "AES_256/GCM/NoPadding":
                 return decrypt_AES_GCM(data);
-
             case "AES_256/CBC/PKCS5Padding":
                 // Implement AES_256/CBC/PKCS5Padding encryption
                 break;
             case "ChaCha20-Poly1305":
                 // Implement ChaCha20-Poly1305 encryption
-                break;
+                ChaCha20 chacha20 = new ChaCha20();
+                return chacha20.decrypt(data);
             default:
                 System.out.println("Unsupported ciphersuite.");
                 break;
