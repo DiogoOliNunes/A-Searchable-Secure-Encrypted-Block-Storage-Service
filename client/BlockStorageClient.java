@@ -1,8 +1,9 @@
 
+import encryption.FileDecryption;
+import encryption.FileEncryption;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import encryption.FileEncryption;
 
 public class BlockStorageClient {
     private static final int PORT = 5000;
@@ -91,7 +92,7 @@ public class BlockStorageClient {
             int blockNum = 0;
             while ((bytesRead = fis.read(buffer)) != -1) {
                 byte[] blockData = Arrays.copyOf(buffer, bytesRead);
-                blockData = encryptor.encrypt(blockData.toString().getBytes());
+                blockData = encryptor.encrypt(blockData);
                 String blockId = file.getName() + "_block_" + blockNum++;
 
                 out.writeUTF("STORE_BLOCK");
@@ -146,9 +147,16 @@ public class BlockStorageClient {
                 }
                 byte[] data = new byte[length];
                 in.readFully(data);
-                data = encryptor.decrypt(data);
+                byte[] decryptedBlock = null;
+                try {
+                    FileDecryption fileDecryption = new FileDecryption();
+                    decryptedBlock = fileDecryption.decrypt("AES_256/GCM/NoPadding", data);
+                    
+                } catch (Exception e) {
+                }
+                //data = encryptor.decrypt(data);
                 System.out.print("."); // Just for debug
-                fos.write(data);
+                fos.write(decryptedBlock);
             }
         } catch (Exception e) {
             e.printStackTrace();
