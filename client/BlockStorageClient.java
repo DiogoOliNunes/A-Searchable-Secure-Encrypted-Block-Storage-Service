@@ -150,7 +150,7 @@ public class BlockStorageClient {
                 byte[] decryptedBlock = null;
                 try {
                     FileDecryption fileDecryption = new FileDecryption();
-                    decryptedBlock = fileDecryption.decrypt("AES_256/GCM/NoPadding", data);
+                    decryptedBlock = fileDecryption.decrypt(encryptor.getCypherSuite(), data);
                     
                 } catch (Exception e) {
                 }
