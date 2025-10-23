@@ -1,4 +1,4 @@
-package streamciphers;
+/* package streamciphers;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
@@ -7,7 +7,7 @@ import java.security.*;
 
 /**
  * Cifra simetrica using teh ChaCha20 (or ChaCha20-Poly1305 Alg.)
- */
+ 
 public class ChaCha20 {
 
     private byte[] nonce;
@@ -46,7 +46,7 @@ public class ChaCha20 {
         this.cipher.init(Cipher.DECRYPT_MODE, this.key, this.param);
         return this.cipher.doFinal(data);
     }
-
+ */
     /*
      * byte[] nonce = new byte[12];
      * // Will generate it as a secure randm nonce :-)
@@ -75,5 +75,6 @@ public class ChaCha20 {
      * byte[] plaintText = cipher.doFinal(input);
      * 
      * System.out.println("plaintext: " + Utils.toHex(plaintText));
-     */
+     
 }
+*/
