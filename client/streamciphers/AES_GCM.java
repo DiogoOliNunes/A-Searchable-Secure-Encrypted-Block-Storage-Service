@@ -17,7 +17,7 @@ public class AES_GCM {
 
     private static final SecretKeySpec KEY = new SecretKeySpec(KEY_BYTES, "AES");
 
-    public static byte[] encryptGCM(byte[] data) throws Exception {
+    public static byte[] encrypt(byte[] data) throws Exception {
         byte[] iv = new byte[12];
         SecureRandom random = new SecureRandom();
         random.nextBytes(iv);
@@ -34,7 +34,7 @@ public class AES_GCM {
         return buffer.array();
     }
 
-    public static byte[] decryptGCM(byte[] data) throws Exception {
+    public static byte[] decrypt(byte[] data) throws Exception {
         ByteBuffer byteBuffer = ByteBuffer.wrap(data);
 
         byte[] iv = new byte[12];

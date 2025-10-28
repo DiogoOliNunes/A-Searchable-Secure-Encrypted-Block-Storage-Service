@@ -1,80 +1,59 @@
-/* package streamciphers;
+package streamciphers;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.spec.ChaCha20ParameterSpec;
-import java.security.*;
 
-/**
- * Cifra simetrica using teh ChaCha20 (or ChaCha20-Poly1305 Alg.)
- 
+import java.io.ByteArrayOutputStream;
+import java.security.*;
+import java.util.Arrays;
+
+//Cifra simetrica using teh ChaCha20 (or ChaCha20-Poly1305 Alg.)
+
 public class ChaCha20 {
 
-    private byte[] nonce;
-    private int counter = 1;
-    private SecretKeySpec key;
-    private ChaCha20ParameterSpec param;
-    private Cipher cipher;
+    private static final int COUNTER = 1;
+    private static final int NONCE_SIZE = 12;
+
+    private static final byte[] KEY_BYTES = new byte[] {
+            0x01, 0x23, 0x45, 0x67, (byte) 0x89, (byte) 0xab, (byte) 0xcd, (byte) 0xef,
+            0x01, 0x23, 0x45, 0x67, (byte) 0x89, (byte) 0xab, (byte) 0xcd, (byte) 0xef,
+            0x01, 0x23, 0x45, 0x67, (byte) 0x89, (byte) 0xab, (byte) 0xcd, (byte) 0xef,
+            0x01, 0x23, 0x45, 0x67, (byte) 0x89, (byte) 0xab, (byte) 0xcd, (byte) 0xef };
+
+    private static final SecretKeySpec key = new SecretKeySpec(KEY_BYTES, "ChaCha20");
 
     public ChaCha20() {
-        this.nonce = new byte[12];
-        byte[] keyBytes = new byte[] {
-                0x01, 0x23, 0x45, 0x67, (byte) 0x89, (byte) 0xab, (byte) 0xcd, (byte) 0xef,
-                0x01, 0x23, 0x45, 0x67, (byte) 0x89, (byte) 0xab, (byte) 0xcd, (byte) 0xef,
-                0x01, 0x23, 0x45, 0x67, (byte) 0x89, (byte) 0xab, (byte) 0xcd, (byte) 0xef,
-                0x01, 0x23, 0x45, 0x67, (byte) 0x89, (byte) 0xab, (byte) 0xcd, (byte) 0xef };
+    }
 
+    public static byte[] encrypt(byte[] data) throws Exception {
+        byte[] nonce = new byte[NONCE_SIZE];
         new SecureRandom().nextBytes(nonce);
-        this.counter = 1;
 
-        this.param = new ChaCha20ParameterSpec(nonce, counter);
-        this.key = new SecretKeySpec(keyBytes, "ChaCha20");
+        ChaCha20ParameterSpec param = new ChaCha20ParameterSpec(nonce, COUNTER);
+        Cipher cipher = Cipher.getInstance("ChaCha20");
+        cipher.init(Cipher.ENCRYPT_MODE, key, param);
 
-        try {
-            this.cipher = Cipher.getInstance("ChaCha20");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        byte[] cipherText = cipher.doFinal(data);
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        output.write(nonce);
+        output.write(cipherText);
+
+        return output.toByteArray();
     }
 
-    public byte[] encrypt(byte[] data) throws Exception {
-        this.cipher.init(Cipher.ENCRYPT_MODE, this.key, this.param);
-        return this.cipher.doFinal(data);
-    }
+    public static byte[] decrypt(byte[] data) throws Exception {
+        if (data.length < NONCE_SIZE)
+            throw new IllegalArgumentException("Encrypted data too short");
 
-    public byte[] decrypt(byte[] data) throws Exception {
-        this.cipher.init(Cipher.DECRYPT_MODE, this.key, this.param);
-        return this.cipher.doFinal(data);
+        byte[] nonce = Arrays.copyOfRange(data, 0, NONCE_SIZE);
+        byte[] cipherText = Arrays.copyOfRange(data, NONCE_SIZE, data.length);
+
+        ChaCha20ParameterSpec param = new ChaCha20ParameterSpec(nonce, COUNTER);
+        Cipher cipher = Cipher.getInstance("ChaCha20");
+        cipher.init(Cipher.DECRYPT_MODE, key, param);
+
+        return cipher.doFinal(cipherText);
     }
- */
-    /*
-     * byte[] nonce = new byte[12];
-     * // Will generate it as a secure randm nonce :-)
-     * 
-     * new SecureRandom().nextBytes(nonce);
-     * 
-     * int counter = 1; // Need an initialized counter as integer
-     * // Counter conventionaly = 1 but can use other values
-     * 
-     * SecretKeySpec key = new SecretKeySpec(keyBytes, "ChaCha20");
-     * 
-     * ChaCha20ParameterSpec param = new ChaCha20ParameterSpec(nonce, counter);
-     * Cipher cipher = Cipher.getInstance("ChaCha20");
-     * 
-     * System.out.println("key   : " + Utils.toHex(keyBytes));
-     * System.out.println("input : " + Utils.toHex(input));
-     * 
-     * // encryption
-     * cipher.init(Cipher.ENCRYPT_MODE, key, param);
-     * byte[] cipherText = cipher.doFinal(input);
-     * 
-     * System.out.println("cipher: " + Utils.toHex(cipherText));
-     * 
-     * // decryption
-     * cipher.init(Cipher.DECRYPT_MODE, key, param);
-     * byte[] plaintText = cipher.doFinal(input);
-     * 
-     * System.out.println("plaintext: " + Utils.toHex(plaintText));
-     
 }
-*/
