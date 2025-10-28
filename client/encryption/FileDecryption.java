@@ -4,6 +4,7 @@ import java.security.SecureRandom;
 import javax.crypto.Cipher;
 import javax.crypto.spec.ChaCha20ParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import streamciphers.AES_CBC_Padding;
 import streamciphers.AES_GCM;
 
 public class FileDecryption {
@@ -19,14 +20,12 @@ public class FileDecryption {
             case "AES_256/GCM/NoPadding":
                 return AES_GCM.decryptGCM(data);
             case "AES_256/CBC/PKCS5Padding":
-                // Implement AES_256/CBC/PKCS5Padding encryption
-                break;
+                return AES_CBC_Padding.decrypt(data);
             case "ChaCha20-Poly1305":
                 return decrypt_CHACHA20_Poly1305(data);
             default:
                 System.out.println("Unsupported ciphersuite.");
-                break;
-        }
+                break;}
         return null;
     }
 
