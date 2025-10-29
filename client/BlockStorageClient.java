@@ -99,7 +99,6 @@ public class BlockStorageClient {
                 out.writeUTF(blockId);
                 out.writeInt(blockData.length);
                 out.write(blockData);
-                System.out.print("."); // Just for debug
 
                 // Send keywords for first block only
                 if (blockNum == 1) {
@@ -154,8 +153,7 @@ public class BlockStorageClient {
                     
                 } catch (Exception e) {
                 }
-                //data = encryptor.decrypt(data);
-                System.out.print("."); // Just for debug
+                System.out.print("."); 
                 fos.write(decryptedBlock);
             }
         } catch (Exception e) {
