@@ -6,7 +6,7 @@ import javax.crypto.Cipher;
 import javax.crypto.Mac;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import static trapdoor.Trapdoor.bytesToHex;
+import static encryption.KeywordSecurity.bytesToHex;
 
 public class AES_CBC_Padding {
 

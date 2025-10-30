@@ -1,6 +1,10 @@
 
 import encryption.FileDecryption;
 import encryption.FileEncryption;
+import encryption.KeywordSecurity;
+
+import static encryption.KeywordSecurity.bytesToHex;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -11,13 +15,17 @@ public class BlockStorageClient {
     private static final String INDEX_FILE = "client_index.ser";
 
     private static Map<String, List<String>> fileIndex = new HashMap<>();
+    //private static Map<String, List<String>> keywordsIndex = new HashMap<>();
 
     private static FileEncryption encryptor;
+    private static KeywordSecurity kwSec;
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         loadIndex();
 
-        Socket socket = new Socket("localhost", PORT);
+        Socket socket = new Socket("localhost", PORT);               
+        kwSec = new KeywordSecurity();
+
         try (
                 DataInputStream in = new DataInputStream(socket.getInputStream());
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
@@ -37,7 +45,8 @@ public class BlockStorageClient {
                         }
                         System.out.print("Enter keywords (comma-separated): ");
                         String kwLine = scanner.nextLine();
-                        System.out.println("Which ciphersuite? (AES_256/GCM/NoPadding, AES_256/CBC/PKCS5Padding, ChaCha20-Poly1305): ");
+                        System.out.println(
+                                "Which ciphersuite? (AES_256/GCM/NoPadding, AES_256/CBC/PKCS5Padding, ChaCha20-Poly1305): ");
                         String ciphersuite = scanner.nextLine();
                         encryptor = new FileEncryption(ciphersuite);
                         List<String> keywords = new ArrayList<>();
@@ -90,6 +99,7 @@ public class BlockStorageClient {
             byte[] buffer = new byte[BLOCK_SIZE];
             int bytesRead;
             int blockNum = 0;
+
             while ((bytesRead = fis.read(buffer)) != -1) {
                 byte[] blockData = Arrays.copyOf(buffer, bytesRead);
                 blockData = encryptor.encrypt(blockData);
@@ -103,8 +113,10 @@ public class BlockStorageClient {
                 // Send keywords for first block only
                 if (blockNum == 1) {
                     out.writeInt(keywords.size());
-                    for (String kw : keywords)
-                        out.writeUTF(kw);
+                    for (String kw : keywords) {
+                        String encryptedKw = bytesToHex(kwSec.encryptKeyword(kw));
+                        out.writeUTF(encryptedKw);
+                    }
                     System.out.println("/nSent keywords./n"); // Just for debug
                 } else {
                     out.writeInt(0); // no keywords for other blocks
@@ -150,10 +162,10 @@ public class BlockStorageClient {
                 try {
                     FileDecryption fileDecryption = new FileDecryption();
                     decryptedBlock = fileDecryption.decrypt(encryptor.getCypherSuite(), data);
-                    
+
                 } catch (Exception e) {
                 }
-                System.out.print("."); 
+                System.out.print(".");
                 fos.write(decryptedBlock);
             }
         } catch (Exception e) {
@@ -165,9 +177,15 @@ public class BlockStorageClient {
     }
 
     private static void searchFiles(String keyword, DataOutputStream out, DataInputStream in) throws IOException {
-        out.writeUTF("SEARCH");
-        out.writeUTF(keyword.toLowerCase());
-        out.flush();
+        try {
+            out.writeUTF("SEARCH");
+            String encryptedKw = bytesToHex(kwSec.encryptKeyword(keyword));
+            out.writeUTF(encryptedKw);
+            out.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
         int count = in.readInt();
         System.out.println();
         System.out.println("Search results:");
