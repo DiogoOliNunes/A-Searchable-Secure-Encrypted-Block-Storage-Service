@@ -15,18 +15,12 @@ public class ChaCha20 {
     private static final int COUNTER = 1;
     private static final int NONCE_SIZE = 12;
 
-    private static final byte[] KEY_BYTES = new byte[] {
-            0x01, 0x23, 0x45, 0x67, (byte) 0x89, (byte) 0xab, (byte) 0xcd, (byte) 0xef,
-            0x01, 0x23, 0x45, 0x67, (byte) 0x89, (byte) 0xab, (byte) 0xcd, (byte) 0xef,
-            0x01, 0x23, 0x45, 0x67, (byte) 0x89, (byte) 0xab, (byte) 0xcd, (byte) 0xef,
-            0x01, 0x23, 0x45, 0x67, (byte) 0x89, (byte) 0xab, (byte) 0xcd, (byte) 0xef };
-
-    private static final SecretKeySpec key = new SecretKeySpec(KEY_BYTES, "ChaCha20");
-
     public ChaCha20() {
     }
 
-    public static byte[] encrypt(byte[] data) throws Exception {
+    public static byte[] encrypt(byte[] data, byte[] keyBytes) throws Exception {
+        SecretKeySpec key = new SecretKeySpec(keyBytes, "ChaCha20");
+
         byte[] nonce = new byte[NONCE_SIZE];
         new SecureRandom().nextBytes(nonce);
 
@@ -43,7 +37,7 @@ public class ChaCha20 {
         return output.toByteArray();
     }
 
-    public static byte[] decrypt(byte[] data) throws Exception {
+    public static byte[] decrypt(byte[] data, SecretKeySpec key) throws Exception {
         if (data.length < NONCE_SIZE)
             throw new IllegalArgumentException("Encrypted data too short");
 

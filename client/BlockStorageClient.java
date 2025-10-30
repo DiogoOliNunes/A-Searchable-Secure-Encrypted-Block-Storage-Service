@@ -7,6 +7,8 @@ import static encryption.KeywordSecurity.bytesToHex;
 
 import java.io.*;
 import java.net.*;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.util.*;
 
 public class BlockStorageClient {
@@ -15,16 +17,19 @@ public class BlockStorageClient {
     private static final String INDEX_FILE = "client_index.ser";
 
     private static Map<String, List<String>> fileIndex = new HashMap<>();
-    //private static Map<String, List<String>> keywordsIndex = new HashMap<>();
+    private static Map<String, String> passwordIndex = new HashMap<>();
 
     private static FileEncryption encryptor;
+    private static FileDecryption decryptor;
     private static KeywordSecurity kwSec;
+    private static KeyStore store;
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException, KeyStoreException {
         loadIndex();
 
         Socket socket = new Socket("localhost", PORT);               
         kwSec = new KeywordSecurity();
+        store = KeyStore.getInstance("JCEKS");
 
         try (
                 DataInputStream in = new DataInputStream(socket.getInputStream());
@@ -43,25 +48,30 @@ public class BlockStorageClient {
                             System.out.println("File does not exist.");
                             continue;
                         }
+                        System.out.print("Enter password: "); //TODO: fazer casos e excecoes
+                        String putPassword = scanner.nextLine();
                         System.out.print("Enter keywords (comma-separated): ");
                         String kwLine = scanner.nextLine();
-                        System.out.println(
+                        System.out.print(
                                 "Which ciphersuite? (AES_256/GCM/NoPadding, AES_256/CBC/PKCS5Padding, ChaCha20-Poly1305): ");
                         String ciphersuite = scanner.nextLine();
-                        encryptor = new FileEncryption(ciphersuite);
+                        encryptor = new FileEncryption(ciphersuite, store);
                         List<String> keywords = new ArrayList<>();
                         if (!kwLine.trim().isEmpty()) {
                             for (String kw : kwLine.split(","))
                                 keywords.add(kw.trim().toLowerCase());
                         }
-                        putFile(file, keywords, out, in);
+                        putFile(file, keywords, putPassword, out, in);
                         saveIndex();
                         break;
 
                     case "GET":
                         System.out.print("Enter filename to retrieve: ");
                         String filename = scanner.nextLine();
-                        getFile(filename, out, in);
+                        System.out.print("Enter the password: ");
+                        String getPassword = scanner.nextLine();
+                        decryptor = new FileDecryption(ciphersuite, store);
+                        getFile(filename, getPassword, out, in);
                         break;
 
                     case "LIST":
@@ -92,7 +102,7 @@ public class BlockStorageClient {
         }
     }
 
-    private static void putFile(File file, List<String> keywords, DataOutputStream out, DataInputStream in)
+    private static void putFile(File file, List<String> keywords, String password, DataOutputStream out, DataInputStream in)
             throws IOException {
         List<String> blocks = new ArrayList<>();
         try (FileInputStream fis = new FileInputStream(file)) {
@@ -102,7 +112,7 @@ public class BlockStorageClient {
 
             while ((bytesRead = fis.read(buffer)) != -1) {
                 byte[] blockData = Arrays.copyOf(buffer, bytesRead);
-                blockData = encryptor.encrypt(blockData);
+                blockData = encryptor.encrypt(blockData, password);
                 String blockId = file.getName() + "_block_" + blockNum++;
 
                 out.writeUTF("STORE_BLOCK");
@@ -135,11 +145,17 @@ public class BlockStorageClient {
             return;
         }
         fileIndex.put(file.getName(), blocks);
+        passwordIndex.put(file.getName(), password);
         System.out.println();
         System.out.println("File stored with " + blocks.size() + " blocks.");
     }
 
-    private static void getFile(String filename, DataOutputStream out, DataInputStream in) throws IOException {
+    private static void getFile(String filename, String password, DataOutputStream out, DataInputStream in) throws IOException {
+        if (!passwordIndex.get(filename).equals(password)) {
+            System.out.println();
+            System.out.println("Password is incorrect.");
+            return;
+        }
         List<String> blocks = fileIndex.get(filename);
         if (blocks == null) {
             System.out.println();
@@ -160,8 +176,7 @@ public class BlockStorageClient {
                 in.readFully(data);
                 byte[] decryptedBlock = null;
                 try {
-                    FileDecryption fileDecryption = new FileDecryption();
-                    decryptedBlock = fileDecryption.decrypt(encryptor.getCypherSuite(), data);
+                    decryptedBlock = decryptor.decrypt(encryptor.getCypherSuite(), data, password);
 
                 } catch (Exception e) {
                 }
