@@ -20,8 +20,8 @@ public class FileDecryption {
         ChaCha20 = new ChaCha20();
     }
 
-    public byte[] decrypt(byte[] data, String fileName, String password) throws Exception {
-        SecretKey passwordKey = getKey(fileName, password);
+    public byte[] decrypt(byte[] data, String fileName) throws Exception {
+        SecretKey passwordKey = getKey(fileName);
 
         switch (ciphersuite.getAlgorithm()) {
             case "AES_256/GCM/NoPadding":
