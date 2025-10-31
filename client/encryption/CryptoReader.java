@@ -1,20 +1,20 @@
 package encryption;
 public class CryptoReader {
     
-    private String algorithm;
+    private String ciphersuite;
     private String keySize;
     private String hmac;
     private String hmacKey;
 
-    public CryptoReader(String algorithm, String keySize, String hmac, String hmacKey) {
-        this.algorithm = algorithm;
+    public CryptoReader(String ciphersuite, String keySize, String hmac, String hmacKey) {
+        this.ciphersuite = ciphersuite;
         this.keySize = keySize;
         this.hmac = hmac;
         this.hmacKey = hmacKey;
     }
 
-    public String getAlgorithm() {
-        return algorithm;
+    public String getCiphersuite() {
+        return ciphersuite;
     }
 
     public String getKeySize() {
@@ -36,7 +36,7 @@ public class CryptoReader {
     @Override
     public String toString() {
         return "CryptoReader{" +
-                "algorithm='" + algorithm + '\'' +
+                "ciphersuite='" + ciphersuite + '\'' +
                 ", keySize='" + keySize + '\'' +
                 ", hmac='" + hmac + '\'' +
                 ", hmacKey='" + hmacKey + '\'' +

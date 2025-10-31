@@ -7,6 +7,8 @@ import static encryption.KeywordSecurity.bytesToHex;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.stream.Stream;
+
 import javax.crypto.SecretKey;
 import streamciphers.PBKDF2;
 
@@ -21,44 +23,45 @@ public class BlockStorageClient {
     private static FileEncryption encryptor;
     private static FileDecryption decryptor;
     private static KeywordSecurity kwSec;
-    private static CryptoReader config;
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, Exception {
         loadIndex();
 
         Socket socket = new Socket("localhost", PORT);
         kwSec = new KeywordSecurity();
-        config = ReadCryptoConfig("./client/cryptoconfig.txt");
-        System.out.println("Loaded config:\n" + config.toString());
+
         try (
                 DataInputStream in = new DataInputStream(socket.getInputStream());
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
                 Scanner scanner = new Scanner(System.in);) {
-            System.out.print("Username: ");
-            String username = scanner.nextLine();
-            if (username.isBlank()) {
-                System.out.println("Blank username");
-                return;
-            }
-
+            /*
+             * System.out.print("Username: ");
+             * String username = scanner.nextLine();
+             * if (username.isBlank()) {
+             * System.out.println("Blank username");
+             * return;
+             * }
+             * 
+             * String password = null;
+             * if (!passwordIndex.containsKey(username)) {
+             * System.out.print("Crie uma palavra passe: ");
+             * password = scanner.nextLine();
+             * while (password.isBlank()) {
+             * System.out.print("Blank password. Tente outra vez: ");
+             * password = scanner.nextLine();
+             * }
+             * passwordIndex.put(username, password);
+             * } else {
+             * System.out.print("Palavra Passe: ");
+             * String checkPassword = scanner.nextLine();
+             * if (!passwordIndex.get(username).equals(checkPassword)) {
+             * System.out.println("Palavra Passe incorreta.");
+             * return;
+             * }
+             * password = checkPassword;
+             * }
+             */
             String password = null;
-            if (!passwordIndex.containsKey(username)) {
-                System.out.print("Crie uma palavra passe: ");
-                password = scanner.nextLine();
-                while (password.isBlank()) {
-                    System.out.print("Blank password. Tente outra vez: ");
-                    password = scanner.nextLine();
-                }
-                passwordIndex.put(username, password);
-            } else {
-                System.out.print("Palavra Passe: ");
-                String checkPassword = scanner.nextLine();
-                if (!passwordIndex.get(username).equals(checkPassword)) {
-                    System.out.println("Palavra Passe incorreta.");
-                    return;
-                }
-                password = checkPassword;
-            }
             while (true) {
                 System.out.print("Command (PUT/GET/LIST/SEARCH/EXIT): ");
                 String cmd = scanner.nextLine().toUpperCase();
@@ -74,9 +77,13 @@ public class BlockStorageClient {
                         }
                         System.out.print("Enter keywords (comma-separated): ");
                         String kwLine = scanner.nextLine();
-                        
-                        CryptoReader ciphersuite = ReadCryptoConfig("./client/cryptoconfig.txt");
-                        encryptor = new FileEncryption(ciphersuite);
+                        String[] input = new String[3];
+                        input = readCryptoConfig();
+                        String ciphersuite = input[0].split(" ")[1];
+                        String user = input[1].split(" ")[1];
+                        password = input[2].split(" ")[1];
+
+                        encryptor = new FileEncryption(ciphersuite, password.toCharArray());
                         List<String> keywords = new ArrayList<>();
                         if (!kwLine.trim().isEmpty()) {
                             for (String kw : kwLine.split(","))
@@ -86,11 +93,10 @@ public class BlockStorageClient {
                         saveIndex();
                         break;
 
-
                     case "GET":
                         System.out.print("Enter filename to retrieve: ");
                         String filename = scanner.nextLine();
-                        decryptor = new FileDecryption(config);
+                        decryptor = new FileDecryption(encryptor.ciphersuite);
                         getFile(filename, password, out, in);
                         break;
 
@@ -230,36 +236,17 @@ public class BlockStorageClient {
         }
     }
 
-    private static CryptoReader ReadCryptoConfig(String configFile) throws FileNotFoundException {
-    String algorithm = "";
-    String keysize = "";
-    String hmac = "";
-    String hmacKey = "";
-
-    try (BufferedReader reader = new BufferedReader(new FileReader(configFile))) {
-        String line;
-        while ((line = reader.readLine()) != null) {
-            line = line.trim();
-            if (line.isEmpty() || line.startsWith("Possible")) break;
-
-            if (line.startsWith("Algorithm:")) {
-                algorithm = line.substring("Algorithm:".length()).trim();
-            } else if (line.startsWith("Keysize:")) {
-                keysize = line.substring("Keysize:".length()).trim();
-            } else if (line.startsWith("HMAC:")) {
-                hmac = line.substring("HMAC:".length()).trim();
-            } else if (line.startsWith("HMACKEY:")) {
-                hmacKey = line.substring("HMACKEY:".length()).trim();
-            }
+    private static String[] readCryptoConfig() {
+        File configFile = new File("client/cryptoconfig.txt");
+        String[] config = new String[3];
+        try (BufferedReader reader = new BufferedReader(new FileReader(configFile))) {
+            Stream<String> input = reader.lines();
+            return (String[]) input.toArray();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
-    } catch (IOException e) {
-        e.printStackTrace();
     }
-
-    CryptoReader config = new CryptoReader(algorithm, keysize, hmac, hmacKey);
-    
-    return config;
-}
 
     private static void saveIndex() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(INDEX_FILE))) {

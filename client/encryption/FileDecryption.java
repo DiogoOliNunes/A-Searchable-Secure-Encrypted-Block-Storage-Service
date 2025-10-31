@@ -8,22 +8,19 @@ import static streamciphers.PBKDF2.getKey;
 
 public class FileDecryption {
 
-    public CryptoReader ciphersuite;
+    public String ciphersuite;
     public AES_GCM aes_gcm;
     public AES_CBC_Padding AES_CBC_Padding;
     public ChaCha20 ChaCha20;
 
-    public FileDecryption(CryptoReader ciphersuite) {
+    public FileDecryption(String ciphersuite) throws Exception {
         this.ciphersuite = ciphersuite;
-        aes_gcm = new AES_GCM();
-        AES_CBC_Padding = new AES_CBC_Padding();
-        ChaCha20 = new ChaCha20();
     }
 
     public byte[] decrypt(byte[] data, String fileName) throws Exception {
         SecretKey passwordKey = getKey(fileName);
-
-        switch (ciphersuite.getAlgorithm()) {
+        System.out.println("Using ciphersuite: " + ciphersuite);
+        switch (ciphersuite) {
             case "AES_256/GCM/NoPadding":
                 return AES_GCM.decrypt(data, passwordKey);
             case "AES_256/CBC/PKCS5Padding":
