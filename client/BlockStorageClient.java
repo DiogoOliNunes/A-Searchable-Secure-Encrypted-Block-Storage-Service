@@ -34,6 +34,31 @@ public class BlockStorageClient {
                 DataInputStream in = new DataInputStream(socket.getInputStream());
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
                 Scanner scanner = new Scanner(System.in);) {
+            System.out.print("Username: ");
+            String username = scanner.nextLine();
+            if (username.isBlank()) {
+                System.out.println("Blank username");
+                return;
+            }
+
+            String password = null;
+            if (!passwordIndex.containsKey(username)) {
+                System.out.print("Crie uma palavra passe: ");
+                password = scanner.nextLine();
+                while (password.isBlank()) {
+                    System.out.print("Blank password. Tente outra vez: ");
+                    password = scanner.nextLine();
+                }
+                passwordIndex.put(username, password);
+            } else {
+                System.out.print("Palavra Passe: ");
+                String checkPassword = scanner.nextLine();
+                if (!passwordIndex.get(username).equals(checkPassword)) {
+                    System.out.println("Palavra Passe incorreta.");
+                    return;
+                }
+                password = checkPassword;
+            }
             while (true) {
                 System.out.print("Command (PUT/GET/LIST/SEARCH/EXIT): ");
                 String cmd = scanner.nextLine().toUpperCase();
@@ -47,30 +72,26 @@ public class BlockStorageClient {
                             System.out.println("File does not exist.");
                             continue;
                         }
-                        System.out.print("Enter password: "); // TODO: fazer casos e excecoes
-                        String putPassword = scanner.nextLine();
                         System.out.print("Enter keywords (comma-separated): ");
                         String kwLine = scanner.nextLine();
                         System.out.print(
                                 "Which ciphersuite? (AES_256/GCM/NoPadding, AES_256/CBC/PKCS5Padding, ChaCha20-Poly1305): ");
                         String ciphersuite = scanner.nextLine();
-                        encryptor = new FileEncryption(ciphersuite);
+                        encryptor = new FileEncryption(ciphersuite, password.toCharArray());
                         List<String> keywords = new ArrayList<>();
                         if (!kwLine.trim().isEmpty()) {
                             for (String kw : kwLine.split(","))
                                 keywords.add(kw.trim().toLowerCase());
                         }
-                        putFile(file, keywords, putPassword, out, in);
+                        putFile(file, keywords, password, out, in);
                         saveIndex();
                         break;
 
                     case "GET":
                         System.out.print("Enter filename to retrieve: ");
                         String filename = scanner.nextLine();
-                        System.out.print("Enter the password: ");
-                        String getPassword = scanner.nextLine();
                         decryptor = new FileDecryption(encryptor.getCypherSuite());
-                        getFile(filename, getPassword, out, in);
+                        getFile(filename, password, out, in);
                         break;
 
                     case "LIST":
@@ -109,8 +130,8 @@ public class BlockStorageClient {
             byte[] buffer = new byte[BLOCK_SIZE];
             int bytesRead;
             int blockNum = 0;
-            PBKDF2 pbkdf2 = new PBKDF2();
-            SecretKey passwordKey = pbkdf2.deriveKey(file.getName(), password, encryptor.ciphersuite);
+            PBKDF2 pbkdf2 = new PBKDF2(password.toCharArray());
+            SecretKey passwordKey = pbkdf2.deriveKey(file.getName(), encryptor.ciphersuite);
 
             while ((bytesRead = fis.read(buffer)) != -1) {
                 byte[] blockData = Arrays.copyOf(buffer, bytesRead);
@@ -147,18 +168,12 @@ public class BlockStorageClient {
             return;
         }
         fileIndex.put(file.getName(), blocks);
-        passwordIndex.put(file.getName(), password);
         System.out.println();
         System.out.println("File stored with " + blocks.size() + " blocks.");
     }
 
     private static void getFile(String filename, String password, DataOutputStream out, DataInputStream in)
             throws IOException {
-        if (!passwordIndex.get(filename).equals(password)) {
-            System.out.println();
-            System.out.println("Password is incorrect.");
-            return;
-        }
         List<String> blocks = fileIndex.get(filename);
         if (blocks == null) {
             System.out.println();
@@ -179,9 +194,9 @@ public class BlockStorageClient {
                 in.readFully(data);
                 byte[] decryptedBlock = null;
                 try {
-                    decryptedBlock = decryptor.decrypt(data, filename, password);
+                    decryptedBlock = decryptor.decrypt(data, filename);
                 } catch (Exception e) {
-                    e.printStackTrace();                    
+                    e.printStackTrace();
                 }
                 System.out.print(".");
                 fos.write(decryptedBlock);

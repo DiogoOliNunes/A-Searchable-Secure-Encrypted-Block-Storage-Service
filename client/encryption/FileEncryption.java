@@ -12,13 +12,12 @@ public class FileEncryption {
     public String ciphersuite;
     public PBKDF2 pbkdf2;
 
-    public FileEncryption(String ciphersuite) throws Exception {
+    public FileEncryption(String ciphersuite, char[] password) throws Exception {
         this.ciphersuite = ciphersuite;
-        pbkdf2 = new PBKDF2();
+        pbkdf2 = new PBKDF2(password);
     }
 
     public byte[] encrypt(byte[] data, SecretKey passwordKey) throws Exception {
-
         switch (ciphersuite) {
             case "AES_256/GCM/NoPadding":
                 return AES_GCM.encrypt(data, passwordKey);

@@ -18,79 +18,72 @@ public class PBKDF2 {
     private static final int SALT_LEN = 16;
     private static final int ITERATIONS = 100000;
     private static final int KEY_LEN_BITS = 256;
-    private static final char[] KS_PASSWORD = "password".toCharArray();
 
     private static KeyStore store;
     private File storeFile;
+    private static char[] password;
+    private static PasswordProtection protection;
 
-    public PBKDF2() throws Exception {
+    public PBKDF2(char[] password) throws Exception {
         PBKDF2.store = KeyStore.getInstance("JCEKS");
         this.storeFile = new File("client_keystore.jceks");
+        PBKDF2.password = password;
+        protection = new PasswordProtection(password);
 
         if (storeFile.exists() && storeFile.length() > 0) {
             try (FileInputStream in = new FileInputStream(storeFile)) {
-                store.load(in, KS_PASSWORD);
+                store.load(in, password);
             } catch (Exception e) {
                 System.out.println("Keystore corrupted, creating a new one");
-                store.load(null, KS_PASSWORD);
+                store.load(null, password);
                 try (FileOutputStream out = new FileOutputStream(storeFile)) {
-                    store.store(out, KS_PASSWORD);
+                    store.store(out, password);
                 }
             }
         } else {
-            store.load(null, KS_PASSWORD);
+            store.load(null, password);
             try (FileOutputStream out = new FileOutputStream(storeFile)) {
-                store.store(out, KS_PASSWORD);
+                store.store(out, password);
             }
         }
     }
 
-    private SecretKey pbkdf2(String password, byte[] salt) throws Exception {
-        PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, ITERATIONS, KEY_LEN_BITS);
+    private SecretKey pbkdf2(byte[] salt) throws Exception {
+        PBEKeySpec spec = new PBEKeySpec(password, salt, ITERATIONS, KEY_LEN_BITS);
         SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
         byte[] keyBytes = keyFactory.generateSecret(spec).getEncoded();
 
         return new SecretKeySpec(keyBytes, "AES");
     }
 
-    public SecretKey deriveKey(String fileName, String password, String ciphersuite) throws Exception {
+    public SecretKey deriveKey(String fileName, String ciphersuite) throws Exception {
         byte[] salt = new byte[SALT_LEN];
         new SecureRandom().nextBytes(salt);
 
-        SecretKey passwordKey = pbkdf2(password, salt);
+        SecretKey passwordKey = pbkdf2(salt);
         SecretKeyEntry keyEntry = new SecretKeyEntry(passwordKey);
-        store.setEntry(fileName, keyEntry, new PasswordProtection(KS_PASSWORD));
-
-        SecretKeySpec spec = new SecretKeySpec(salt, ciphersuite);
-        SecretKeyEntry saltEntry = new SecretKeyEntry(spec);
-        store.setEntry(fileName + " salt", saltEntry, new PasswordProtection(KS_PASSWORD));
+        store.setEntry(fileName, keyEntry, protection);
 
         try (FileOutputStream out = new FileOutputStream(storeFile)) {
-            store.store(out, KS_PASSWORD);
+            store.store(out, password);
         }
         return passwordKey;
     }
 
-    public static SecretKey getKey(String fileName, String password) throws Exception {
+    public static SecretKey getKey(String fileName) throws Exception {
         if (store == null) {
             store = KeyStore.getInstance("JCEKS");
             File storeFile = new File("client_keystore.jceks");
             try (FileInputStream in = new FileInputStream(storeFile)) {
-                store.load(in, KS_PASSWORD);
+                store.load(in, password);
             }
         }
-        SecretKeyEntry saltEntry = (SecretKeyEntry) store.getEntry(fileName + " salt",
-                new PasswordProtection(KS_PASSWORD));
-        if (saltEntry == null) {
-            System.out.println("Salt not found in the keystore");
+        SecretKeyEntry keyEntry = (SecretKeyEntry) store.getEntry(fileName, protection);
+        if (keyEntry == null) {
+            System.out.println("Key not found in the keystore");
         }
-        byte[] salt = saltEntry.getSecretKey().getEncoded();
+        SecretKey key = keyEntry.getSecretKey();
 
-        PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, ITERATIONS, KEY_LEN_BITS);
-        SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-
-        byte[] keyBytes = keyFactory.generateSecret(spec).getEncoded();
-
-        return new SecretKeySpec(keyBytes, "AES");
+        return key;
     }
 }
