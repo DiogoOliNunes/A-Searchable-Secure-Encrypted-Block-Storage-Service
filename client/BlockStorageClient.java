@@ -1,16 +1,14 @@
 
+import encryption.CryptoReader;
 import encryption.FileDecryption;
 import encryption.FileEncryption;
 import encryption.KeywordSecurity;
-import streamciphers.PBKDF2;
-
 import static encryption.KeywordSecurity.bytesToHex;
-
 import java.io.*;
 import java.net.*;
 import java.util.*;
-
 import javax.crypto.SecretKey;
+import streamciphers.PBKDF2;
 
 public class BlockStorageClient {
     private static final int PORT = 5000;
@@ -23,13 +21,15 @@ public class BlockStorageClient {
     private static FileEncryption encryptor;
     private static FileDecryption decryptor;
     private static KeywordSecurity kwSec;
+    private static CryptoReader config;
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, Exception {
         loadIndex();
 
         Socket socket = new Socket("localhost", PORT);
         kwSec = new KeywordSecurity();
-
+        config = ReadCryptoConfig("./client/cryptoconfig.txt");
+        System.out.println("Loaded config:\n" + config.toString());
         try (
                 DataInputStream in = new DataInputStream(socket.getInputStream());
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
@@ -51,9 +51,8 @@ public class BlockStorageClient {
                         String putPassword = scanner.nextLine();
                         System.out.print("Enter keywords (comma-separated): ");
                         String kwLine = scanner.nextLine();
-                        System.out.print(
-                                "Which ciphersuite? (AES_256/GCM/NoPadding, AES_256/CBC/PKCS5Padding, ChaCha20-Poly1305): ");
-                        String ciphersuite = scanner.nextLine();
+                        
+                        CryptoReader ciphersuite = ReadCryptoConfig("./client/cryptoconfig.txt");
                         encryptor = new FileEncryption(ciphersuite);
                         List<String> keywords = new ArrayList<>();
                         if (!kwLine.trim().isEmpty()) {
@@ -64,12 +63,13 @@ public class BlockStorageClient {
                         saveIndex();
                         break;
 
+
                     case "GET":
                         System.out.print("Enter filename to retrieve: ");
                         String filename = scanner.nextLine();
                         System.out.print("Enter the password: ");
                         String getPassword = scanner.nextLine();
-                        decryptor = new FileDecryption(encryptor.getCypherSuite());
+                        decryptor = new FileDecryption(config);
                         getFile(filename, getPassword, out, in);
                         break;
 
@@ -110,15 +110,16 @@ public class BlockStorageClient {
             int bytesRead;
             int blockNum = 0;
             PBKDF2 pbkdf2 = new PBKDF2();
-            SecretKey passwordKey = pbkdf2.deriveKey(file.getName(), password, encryptor.ciphersuite);
+            SecretKey passwordKey = pbkdf2.deriveKey(file.getName(), password, encryptor.getCypherSuite());
 
             while ((bytesRead = fis.read(buffer)) != -1) {
                 byte[] blockData = Arrays.copyOf(buffer, bytesRead);
                 blockData = encryptor.encrypt(blockData, passwordKey);
                 String blockId = file.getName() + "_block_" + blockNum++;
+                String encryptedBlockId = bytesToHex(kwSec.encryptKeyword(blockId));
 
                 out.writeUTF("STORE_BLOCK");
-                out.writeUTF(blockId);
+                out.writeUTF(encryptedBlockId);
                 out.writeInt(blockData.length);
                 out.write(blockData);
 
@@ -129,6 +130,7 @@ public class BlockStorageClient {
                         String encryptedKw = bytesToHex(kwSec.encryptKeyword(kw));
                         out.writeUTF(encryptedKw);
                     }
+                    System.out.println("ciphersuite used: " + encryptor.getCypherSuite());
                     System.out.println("/nSent keywords./n"); // Just for debug
                 } else {
                     out.writeInt(0); // no keywords for other blocks
@@ -167,8 +169,9 @@ public class BlockStorageClient {
         }
         try (FileOutputStream fos = new FileOutputStream("retrieved_" + filename)) {
             for (String blockId : blocks) {
+                String encryptedBlockId = bytesToHex(kwSec.encryptKeyword(blockId));
                 out.writeUTF("GET_BLOCK");
-                out.writeUTF(blockId);
+                out.writeUTF(encryptedBlockId);
                 out.flush();
                 int length = in.readInt();
                 if (length == -1) {
@@ -187,7 +190,7 @@ public class BlockStorageClient {
                 fos.write(decryptedBlock);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("The file has been tampered. Aborting command...");
             return;
         }
         System.out.println();
@@ -211,6 +214,37 @@ public class BlockStorageClient {
             System.out.println(" - " + in.readUTF());
         }
     }
+
+    private static CryptoReader ReadCryptoConfig(String configFile) throws FileNotFoundException {
+    String algorithm = "";
+    String keysize = "";
+    String hmac = "";
+    String hmacKey = "";
+
+    try (BufferedReader reader = new BufferedReader(new FileReader(configFile))) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+            line = line.trim();
+            if (line.isEmpty() || line.startsWith("Possible")) break;
+
+            if (line.startsWith("Algorithm:")) {
+                algorithm = line.substring("Algorithm:".length()).trim();
+            } else if (line.startsWith("Keysize:")) {
+                keysize = line.substring("Keysize:".length()).trim();
+            } else if (line.startsWith("HMAC:")) {
+                hmac = line.substring("HMAC:".length()).trim();
+            } else if (line.startsWith("HMACKEY:")) {
+                hmacKey = line.substring("HMACKEY:".length()).trim();
+            }
+        }
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+
+    CryptoReader config = new CryptoReader(algorithm, keysize, hmac, hmacKey);
+    
+    return config;
+}
 
     private static void saveIndex() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(INDEX_FILE))) {

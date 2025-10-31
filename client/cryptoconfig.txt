@@ -1,13 +1,18 @@
+Algorithm: AES_256/CBC/PKCS5Padding
+Keysize: 256
+HMAC: HmacSHA256
+HMACKEY: 256
+
 Possible cryptographic primitives:
 
 AES_256/GCM/NoPadding
 - KEYSIZE: 256 bits
 - Only uses AES/GCM mode
 
-AES/CBC/PKCS5Padding + HMAC-SHA256 -- TO DO
+AES_256/CBC/PKCS5Padding + HMAC-SHA256
 - KEYSIZE: 256 bits + MACKEYSIZE: 256 bits
 - Uses AES/CBC/ PKCS5Padding and Block Integrity and Authenticty wih HMACSHA156
 
-CHACHA20-Poly1305 - TO DO
+ChaCha20-Poly1305
 - KEYSIZE: 256
 - Only uses CHACHA20-Poly1305 mode

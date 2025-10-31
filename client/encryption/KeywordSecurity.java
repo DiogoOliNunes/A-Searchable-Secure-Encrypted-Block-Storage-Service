@@ -2,7 +2,6 @@ package encryption;
 
 import java.security.MessageDigest;
 import java.util.Arrays;
-
 import javax.crypto.Cipher;
 import javax.crypto.spec.ChaCha20ParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
