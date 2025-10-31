@@ -1,5 +1,4 @@
 
-import encryption.CryptoReader;
 import encryption.FileDecryption;
 import encryption.FileEncryption;
 import encryption.KeywordSecurity;
@@ -7,7 +6,6 @@ import static encryption.KeywordSecurity.bytesToHex;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.util.stream.Stream;
 
 import javax.crypto.SecretKey;
 import streamciphers.PBKDF2;
@@ -34,33 +32,6 @@ public class BlockStorageClient {
                 DataInputStream in = new DataInputStream(socket.getInputStream());
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
                 Scanner scanner = new Scanner(System.in);) {
-            /*
-             * System.out.print("Username: ");
-             * String username = scanner.nextLine();
-             * if (username.isBlank()) {
-             * System.out.println("Blank username");
-             * return;
-             * }
-             * 
-             * String password = null;
-             * if (!passwordIndex.containsKey(username)) {
-             * System.out.print("Crie uma palavra passe: ");
-             * password = scanner.nextLine();
-             * while (password.isBlank()) {
-             * System.out.print("Blank password. Tente outra vez: ");
-             * password = scanner.nextLine();
-             * }
-             * passwordIndex.put(username, password);
-             * } else {
-             * System.out.print("Palavra Passe: ");
-             * String checkPassword = scanner.nextLine();
-             * if (!passwordIndex.get(username).equals(checkPassword)) {
-             * System.out.println("Palavra Passe incorreta.");
-             * return;
-             * }
-             * password = checkPassword;
-             * }
-             */
             String password = null;
             while (true) {
                 System.out.print("Command (PUT/GET/LIST/SEARCH/EXIT): ");
@@ -238,10 +209,8 @@ public class BlockStorageClient {
 
     private static String[] readCryptoConfig() {
         File configFile = new File("client/cryptoconfig.txt");
-        String[] config = new String[3];
         try (BufferedReader reader = new BufferedReader(new FileReader(configFile))) {
-            Stream<String> input = reader.lines();
-            return (String[]) input.toArray();
+            return reader.lines().toArray(String[]::new);
         } catch (Exception e) {
             e.printStackTrace();
             return null;

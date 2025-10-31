@@ -1,3 +1,17 @@
 Ciphersuite: AES_256/GCM/NoPadding
-User: user
-Password: pass
+User: alice
+Password: pass123
+
+Possible cryptographic primitives:
+
+AES_256/GCM/NoPadding
+KEYSIZE: 256 bits
+Only uses AES/GCM mode
+
+AES_256/CBC/PKCS5Padding + HMAC-SHA256
+KEYSIZE: 256 bits + MACKEYSIZE: 256 bits
+Uses AES/CBC/ PKCS5Padding and Block Integrity and Authenticty wih HMACSHA156
+
+ChaCha20-Poly1305
+KEYSIZE: 256
+Only uses CHACHA20-Poly1305 mode
