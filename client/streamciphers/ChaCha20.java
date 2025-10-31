@@ -1,6 +1,7 @@
 package streamciphers;
 
 import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.spec.ChaCha20ParameterSpec;
 
@@ -18,8 +19,8 @@ public class ChaCha20 {
     public ChaCha20() {
     }
 
-    public static byte[] encrypt(byte[] data, byte[] keyBytes) throws Exception {
-        SecretKeySpec key = new SecretKeySpec(keyBytes, "ChaCha20");
+    public static byte[] encrypt(byte[] data, SecretKey passwordKey) throws Exception {
+        SecretKeySpec key = new SecretKeySpec(passwordKey.getEncoded(), "ChaCha20");
 
         byte[] nonce = new byte[NONCE_SIZE];
         new SecureRandom().nextBytes(nonce);
@@ -37,7 +38,7 @@ public class ChaCha20 {
         return output.toByteArray();
     }
 
-    public static byte[] decrypt(byte[] data, SecretKeySpec key) throws Exception {
+    public static byte[] decrypt(byte[] data, SecretKey passwordKey) throws Exception {
         if (data.length < NONCE_SIZE)
             throw new IllegalArgumentException("Encrypted data too short");
 
@@ -46,7 +47,7 @@ public class ChaCha20 {
 
         ChaCha20ParameterSpec param = new ChaCha20ParameterSpec(nonce, COUNTER);
         Cipher cipher = Cipher.getInstance("ChaCha20");
-        cipher.init(Cipher.DECRYPT_MODE, key, param);
+        cipher.init(Cipher.DECRYPT_MODE, passwordKey, param);
 
         return cipher.doFinal(cipherText);
     }

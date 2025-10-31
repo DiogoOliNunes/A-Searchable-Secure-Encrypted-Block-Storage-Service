@@ -1,34 +1,31 @@
 package encryption;
 
+import javax.crypto.SecretKey;
+
 import streamciphers.AES_CBC_Padding;
 import streamciphers.AES_GCM;
 import streamciphers.ChaCha20;
-
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-
-import static streamciphers.PBKDF2.deriveKeyBytes;
+import streamciphers.PBKDF2;
 
 public class FileEncryption {
 
     public String ciphersuite;
-    public KeyStore store;
+    public PBKDF2 pbkdf2;
 
-    public FileEncryption(String ciphersuite, KeyStore store) {
+    public FileEncryption(String ciphersuite) throws Exception {
         this.ciphersuite = ciphersuite;
-        this.store = store;
+        pbkdf2 = new PBKDF2();
     }
 
-    public byte[] encrypt(byte[] data, String password) throws Exception {
-        byte[] keyBytes = deriveKeyBytes(password);
+    public byte[] encrypt(byte[] data, SecretKey passwordKey) throws Exception {
 
         switch (ciphersuite) {
             case "AES_256/GCM/NoPadding":
-                return AES_GCM.encrypt(data, keyBytes);
+                return AES_GCM.encrypt(data, passwordKey);
             case "AES_256/CBC/PKCS5Padding":
-                return AES_CBC_Padding.encrypt(data, keyBytes);
+                return AES_CBC_Padding.encrypt(data, passwordKey);
             case "ChaCha20-Poly1305":
-                return ChaCha20.encrypt(data, keyBytes);
+                return ChaCha20.encrypt(data, passwordKey);
             default:
                 System.out.println("Unsupported ciphersuite.");
                 break;

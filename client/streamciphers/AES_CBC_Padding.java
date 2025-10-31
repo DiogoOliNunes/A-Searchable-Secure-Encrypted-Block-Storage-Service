@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.security.SecureRandom;
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import static encryption.KeywordSecurity.bytesToHex;
@@ -27,8 +28,8 @@ public class AES_CBC_Padding {
 
     private static final SecretKeySpec MAC_KEY = new SecretKeySpec(MAC_KEY_BYTES, "HmacSHA256");
 
-    public static byte[] encrypt(byte[] data, byte[] keyBytes) throws Exception {
-        SecretKeySpec cipherKey = new SecretKeySpec(keyBytes, "AES");
+    public static byte[] encrypt(byte[] data, SecretKey passwordKey) throws Exception {
+        SecretKeySpec cipherKey = new SecretKeySpec(passwordKey.getEncoded(), "AES");
 
         byte[] iv = new byte[16];
         new SecureRandom().nextBytes(iv);
@@ -54,7 +55,7 @@ public class AES_CBC_Padding {
         return buffer.array();
     }
 
-    public static byte[] decrypt(byte[] encryptedData, SecretKeySpec key) throws Exception {
+    public static byte[] decrypt(byte[] encryptedData, SecretKey passwordKey) throws Exception {
         ByteBuffer byteBuffer = ByteBuffer.wrap(encryptedData);
 
         byte[] iv = new byte[16];
@@ -83,7 +84,7 @@ public class AES_CBC_Padding {
 
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         IvParameterSpec ivSpec = new IvParameterSpec(iv);
-        cipher.init(Cipher.DECRYPT_MODE, key, ivSpec);
+        cipher.init(Cipher.DECRYPT_MODE, passwordKey, ivSpec);
 
         return cipher.doFinal(cipherText);
     }

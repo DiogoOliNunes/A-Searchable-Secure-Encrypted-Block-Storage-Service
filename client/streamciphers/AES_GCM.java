@@ -3,6 +3,7 @@ package streamciphers;
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;
 import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -11,8 +12,8 @@ public class AES_GCM {
     public AES_GCM() {
     }
 
-    public static byte[] encrypt(byte[] data, byte[] keyBytes) throws Exception {
-        SecretKeySpec key = new SecretKeySpec(keyBytes, "AES");
+    public static byte[] encrypt(byte[] data, SecretKey passwordKey) throws Exception {
+        SecretKeySpec key = new SecretKeySpec(passwordKey.getEncoded(), "AES");
         
         byte[] iv = new byte[12];
         SecureRandom random = new SecureRandom();
@@ -30,7 +31,7 @@ public class AES_GCM {
         return buffer.array();
     }
 
-    public static byte[] decrypt(byte[] data, SecretKeySpec key) throws Exception {
+    public static byte[] decrypt(byte[] data, SecretKey passwordKey) throws Exception {
         ByteBuffer byteBuffer = ByteBuffer.wrap(data);
 
         byte[] iv = new byte[12];
@@ -41,7 +42,7 @@ public class AES_GCM {
 
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
         GCMParameterSpec gcmSpec = new GCMParameterSpec(128, iv);
-        cipher.init(Cipher.DECRYPT_MODE, key, gcmSpec);
+        cipher.init(Cipher.DECRYPT_MODE, passwordKey, gcmSpec);
 
         return cipher.doFinal(cipherText);
     }
